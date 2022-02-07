@@ -12,7 +12,7 @@ const geocoding = (address,callback) =>{
             callback('Unable to find the co-ordinates for the given location',undefined)
         }else{
             callback(undefined,{
-           
+                //sendback- lat, long, and address
                  latitude:body.features[0].center[1],
                  longitude:body.features[0].center[0],
                  location :body.features[0].place_name

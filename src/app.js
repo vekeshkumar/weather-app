@@ -10,6 +10,7 @@ const port = process.env.PORT || 3000
 //Include the util files 
 const forecast = require('./utils/forecast.js')
 const geocoding = require('./utils/geocode.js')
+const { isObject } = require('util')
 
 //Define paths for Express config
 
@@ -27,10 +28,10 @@ hbs.registerPartials(partialsPath)
 app.use(express.static(publicDirectoryPath))
 
 
-
+//Routing file to get the pages
 app.get('',(req,res)=>{
     res.render('index',{
-        title:'Home',
+        title:'Weather App',
         name:'Vekesh Kumar',
         forecast :'Clear'
     })
@@ -41,9 +42,8 @@ app.get('/about',(req,res)=>{
         name:'Vekesh Kumar'
     })
 })
-
-
 app.get('/help',(req,res)=>{
+    
     res.render('help',{
         helpText :' This is some sample help text',
         title:'Help',
@@ -56,10 +56,9 @@ app.get('',(req,res)=>{  //request,response
     res.send('<h1>Hello Express JS!</h1>')
 })
 
-
+//Get the weather details
 app.get(('/weather'),(req,res)=>{
-    if(!req.query.address){
-       
+    if(!req.query.address){       
         return res.send({
             error: 'Address for the weather forecast is not provided.'
         })
@@ -77,12 +76,39 @@ app.get(('/weather'),(req,res)=>{
                         location,
                         address:req.query.address
                     })
+                   
                 }
             })
         }
     })
 })
 
+//get current location weather
+//Get the weather details
+app.get(('/weather/current'),(req,res)=>{
+    if(!req.query.address){       
+        return res.send({
+            error: 'Address for the weather forecast is not provided.'
+        })
+    }else{    
+        console.log(req.query.address.toString())
+        const query = JSON.parse(req.query.address)
+        console.log(query.latitude)
+        forecast(query.latitude,query.longitude,(error, forecastData)=>{
+            if(error)
+            {
+                return res.send({error:'Some error occured in the forecast'})
+            }else{
+                console.log(forecastData)
+                res.send({
+                    forecast:forecastData,
+                    address:req.query.address
+                })
+                
+            }
+        })
+    }
+})
 
 app.get(('/products'),(req,res)=>{
     if(!req.query.search){
@@ -122,7 +148,7 @@ app.listen(port,()=>{
 
 //app.get - resource from specific url , route
 /*console.log(__dirname)
-console.log(path.join(__dirname,'../public'))
+console.log(path.join(__dirname,'../'))
 app.get('/help',(req,res)=>{
     res.send({
         name : 'Andrew',age :27
@@ -146,5 +172,51 @@ Wire up /weather
 2.Use the address to geocode
 3.Use the coordinates to get forecast
 4.Send back the real forecast and location
+
+*/
+
+/*
+{
+  request: {
+    type: 'LatLon',
+    query: 'Lat 45.42 and Lon -75.69',
+    language: 'en',
+    unit: 'm'
+  },
+  location: {
+    name: 'Ottawa',
+    country: 'Canada',
+    region: 'Ontario',
+    lat: '45.417',
+    lon: '-75.700',
+    timezone_id: 'America/Toronto',
+    localtime: '2022-02-06 02:10',
+    localtime_epoch: 1644113400,
+    utc_offset: '-5.0'
+  },
+  current: {
+    observation_time: '07:10 AM',
+    temperature: -19,
+    weather_code: 116,
+    weather_icons: [
+      'https://assets.weatherstack.com/images/wsymbols01_png_64/wsymbol_0004_black_low_cloud.png'
+    ],
+    weather_descriptions: [ 'Partly cloudy' ],
+    wind_speed: 13,
+    wind_degree: 200,
+    wind_dir: 'SSW',
+    pressure: 1034,
+    precip: 0,
+    humidity: 70,
+    cloudcover: 75,
+    feelslike: -19,
+    uv_index: 1,
+    visibility: 24,
+    is_day: 'no'
+  }
+}
+
+
+
 
 */
